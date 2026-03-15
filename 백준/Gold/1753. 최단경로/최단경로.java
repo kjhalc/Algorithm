@@ -42,51 +42,46 @@ public class Main {
 		
 		//// 여기까지 그래프 입력받기 완료
 		
-		
-		//// 여기서부터 step1 선택 step2 업데이트 반복
-		
 		for(int i = 1; i <= v; i++) {
 			result[i] = Integer.MAX_VALUE;
 		}
 		
+		//// 여기서부터 step1 선택 step2 업데이트 반복
+		
+		
 		result[k] = 0;
 		int count = 0;
 		
-		for(int i = 0; i < v; i++) {
+		
+		// 우선순위 큐 로직 시작
+		PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1]-o2[1]);
+		
+		pq.offer(new int[] {k, 0});
+		visited[k] = true;
+		result[k] = 0;
+		
+		while(!pq.isEmpty()) {
 			
-			//step1: result중 방문 x이면서 값이 가장 작은 것 고르기
-			int min = Integer.MAX_VALUE;
-			int min_vertax = -1;
 			
-			for(int j = 1; j <= v; j++) {
-				if(!visited[j] && min > result[j]) {
-					min = result[j];
-					min_vertax = j;
-				}				
-			}
+			int[] next = pq.poll();
+			if(next[1] > result[next[0]]) continue;
 			
-			if(min_vertax == -1) break;  // 골라진 게 없으면 다 고른 것이므로 나가기
-			if (count == v) break;
-			
-			// 고른거 방문체크 & 최솟값으로 업데이트.. 는 할필요없네
-			visited[min_vertax] = true;
-//			result[min_vertax] = min;
-			
-			// step2/ 업데이트 (고른것과 인접한 것들 중, 방문 x 면서 이전과 비교했을 때 더 작으면 result를 업데이트
-			// System.out.println("현재 선택된 정점: " + min_vertax);
-			for(int j = 0; j < graph[min_vertax].size(); j++) {
-				int[] next = graph[min_vertax].get(j);  // 해당 정점과 연결된 요소들
-				int to = next[0];
-				int weight = next[1];
-				
-				if(!visited[to] && result[to] > result[min_vertax] + weight) {  //
-					result[to] = result[min_vertax] + weight;
+			// next와 연결된 것들의 result 업데이트
+			for(int p = 0; p < graph[next[0]].size(); p++) {
+				int[] nnt = graph[next[0]].get(p);
+				if(!visited[nnt[0]] && result[nnt[0]] > result[next[0]]+nnt[1]) {
+					result[nnt[0]] = result[next[0]]+nnt[1];
+					pq.offer(new int[] {nnt[0], result[nnt[0]]});
 				}
-			}
 			
+			}
 			
 		}
+
 		
+		
+		
+		// 결과 출력
 		for(int p = 1; p <= v; p++) {
 			if(result[p]==Integer.MAX_VALUE) {
 				System.out.println("INF");
