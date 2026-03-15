@@ -2,29 +2,13 @@ import java.util.*;
 import java.io.*;
 
 public class Solution {
-	
 	static StringTokenizer st;
 	static int v, e;
-//	static Edge[] parent;
-	static int[] parent;
-	static Edge[] edgeList;
-	static long result;
+	static ArrayList<int[]>[] graph;
+	static boolean[] visited;
+	static int[] result;
 	
-	static public class Edge implements Comparable<Edge> {
-		int from, to, weight;
-		
-		public Edge(int from, int to, int weight){
-			this.from = from;
-			this.to = to;
-			this.weight = weight;
-		}
-		
-		public int compareTo(Edge o) {
-			return Integer.compare(this.weight, o.weight);
-		}
-	}
-	
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception {
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
@@ -36,94 +20,74 @@ public class Solution {
 			
 			v = Integer.parseInt(st.nextToken());
 			e = Integer.parseInt(st.nextToken());
-			result = 0;
-
-			edgeList = new Edge[e];
+			
+			graph = new ArrayList[v+1];
+			visited = new boolean[v+1];
+			result = new int[v+1];
+			
+			for(int i = 1; i <= v; i++) {
+				graph[i] = new ArrayList<>();
+			}
+			
 			for(int i = 0; i < e; i++) {
 				st = new StringTokenizer(br.readLine());
+				int first = Integer.parseInt(st.nextToken());
+				int second = Integer.parseInt(st.nextToken());
+				int third = Integer.parseInt(st.nextToken());
 				
-				int from = Integer.parseInt(st.nextToken());
-				int to = Integer.parseInt(st.nextToken());
-				int weight = Integer.parseInt(st.nextToken());
-				
-				edgeList[i] = new Edge(from, to, weight);
+				graph[first].add(new int[] {second, third});
+				graph[second].add(new int[] {first, third});
 			}
 			
-			Arrays.sort(edgeList);
+			// 입력 완료
 			
-			// 입력 후 정렬까지 완료
-			
-			make();
-			int count = 0;
-			
-			// 정점 - 1 만큼일테니까 mst 간선갯수
-				
-				// 일단 1개를 꺼내고
-				
-				// 꺼낸 게 기존과 부모가 같은지 확인
-				// 다르면 연결 후 웨이트 합치기
-				
-				//만약에 싸이클 생기면(부모가다르면 ) 건너뛰기
-				
-				//count == v-1이면 탈출
-				
-
+			for(int i = 1; i <= v; i++) {
+				result[i] = Integer.MAX_VALUE;
+			}
 			
 			
-			for(int i = 0; i < e; i++) {
+			PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]);
+			
+			pq.offer(new int[] {1, 0});  // 정점 1부터 시작
+			visited[1] = true;
+			result[1] = 0;
+			
+			
+			while(!pq.isEmpty()) {
 				
+				int[] next = pq.poll();
+				if (next[1] > result[next[0]] ) continue;
+				visited[next[0]] = true;
+				result[next[0]] = next[1];
 				
-
-				if(union(edgeList[i].from, edgeList[i].to)) {
-					result += edgeList[i].weight;
+				//step2
+				for(int j = 0; j < graph[next[0]].size(); j++) {
+					//인근을 보고 방문체크 확인 및 주변과 비교하기
+					int[] nnxt = graph[next[0]].get(j);  // 인근 요소
 					
-					if(count == v-1) {
-						break;
+					if(!visited[nnxt[0]] && result[nnxt[0]] > nnxt[1]) {  // 해당 부분 수정  next[1] + nnxt[1];
+						result[nnxt[0]] = nnxt[1];
+						pq.offer(new int[] {nnxt[0], result[nnxt[0]]});
+						
 					}
-
 				}
-
+				
 			}
 			
-			System.out.println("#"+test+" "+result);
+			// 해당 result들의 합 구하기
+			long cnt = 0;
+			for (int i = 1; i <= v; i++) {
+//				System.out.println(i + "번째 result 요소: "+ result[i]);
+				cnt += result[i];
+			}
 			
-			
+			System.out.println("#"+test+" "+cnt);
 			
 			
 			
 		}
-	}
-	
-	static void make() {  // 부모 배열을 만들고 자기 자신으로 초기화
 		
-		parent = new int[v+1];
-		
-		for(int i = 1; i <= v; i++) {
-			parent[i] = i;
-		}
 
-	}
-	
-	static int find(int n) {  // 간선 n이 속한 집합의 최고 부모 찾기
-		
-		if(parent[n] == n) {
-			return n;
-		}
-		
-		return parent[n] = find(parent[n]);
-		
-	}
-	
-	static boolean union(int a, int b) {
-		int rootA = find(a);
-		int rootB = find(b);
-		
-		if(rootA == rootB) {
-			return false;
-		}
-		
-		parent[rootA] = rootB;
-		return true;
 	}
 
 }
